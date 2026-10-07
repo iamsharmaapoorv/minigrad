@@ -1,7 +1,8 @@
-from collections import deque 
+from collections import deque
+
 
 class Value:
-    def __init__(self, data, prev = set(), op="") -> None:
+    def __init__(self, data, prev=set(), op="") -> None:
         self.data = data
         self.grad = 0
         self._backward = lambda: None
@@ -37,19 +38,28 @@ class Value:
 
         def _backward():
             self.grad += (other * self.data**(other-1)) * output.grad
-        output._backward=_backward
+        output._backward = _backward
         return output
 
-    def __rmul__(self, other ):
+    def relu(self):
+        output = Value(self.data if self.data > 0 else 0, (self, ), "relu")
+
+        def _backward():
+            self.grad += (output.data > 0) * output.grad
+        output._backward = _backward
+
+        return output
+
+    def __rmul__(self, other):
         return self.__mul__(other)
 
     def __truediv__(self, other):
         return self*(other**-1)
 
-    
     def backward(self):
         visited = set()
         order = []
+
         def dfs(node):
             if node not in visited:
                 visited.add(node)
@@ -62,20 +72,20 @@ class Value:
         for elem in reversed(order):
             elem._backward()
 
-    def __neg__(self): # -self
+    def __neg__(self):  # -self
         return self * -1
 
-    def __radd__(self, other): # other + self
+    def __radd__(self, other):  # other + self
         return self + other
 
-    def __sub__(self, other): # self - other
+    def __sub__(self, other):  # self - other
         return self + (-other)
 
-    def __rsub__(self, other): # other - self
+    def __rsub__(self, other):  # other - self
         return other + (-self)
 
-    def __rtruediv__(self, other): # other / self
+    def __rtruediv__(self, other):  # other / self
         return other * self**-1
-    
+
     def __repr__(self):
         return f"Value(data={self.data}, grad={self.grad})"
