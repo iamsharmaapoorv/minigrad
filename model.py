@@ -13,11 +13,7 @@ class Model(ABC):
         ...
 
     @abstractmethod
-    def plot_points(self):
-        ...
-
-    @abstractmethod
-    def calc_loss(self) -> tuple[Value, float]:
+    def calc_loss(self):
         ...
 
     @abstractmethod

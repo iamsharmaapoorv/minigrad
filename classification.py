@@ -79,3 +79,4 @@ class Classifier(Model):
                     c=self.y, s=40, cmap=plt.cm.Spectral)
         plt.xlim(xx.min(), xx.max())
         plt.ylim(yy.min(), yy.max())
+        plt.show()
