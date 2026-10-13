@@ -3,6 +3,7 @@ from value import Value
 from network import MLP
 from model import Model
 
+
 import random
 import matplotlib.pyplot as plt
 import numpy as np
@@ -69,7 +70,6 @@ class Regressor(Model):
         data_loss = self.evaluate(split)
 
         # l2 regularization
-        alpha = 1e-4
         l2_regularization_loss = alpha * \
             sum(p*p for p in self.mlp.parameters())
 
@@ -89,7 +89,7 @@ class Regressor(Model):
         data_loss = sum(losses)/len(losses)
         return data_loss
 
-    def gradient_descent(self, iterations=00, lr=0.05, printiter=10):
+    def gradient_descent(self, iterations=800, lr=0.05, printiter=10):
         assert self.mlp
         assert self.splits is not None, "call create_dataset() first."
 

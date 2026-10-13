@@ -3,6 +3,7 @@ from sklearn.datasets import make_moons
 from value import Value
 from network import MLP
 from model import Model
+from graph import draw_dot
 
 import random
 import matplotlib.pyplot as plt
@@ -43,7 +44,7 @@ class Classifier(Model):
         accuracy = sum(correct)/len(scores)
         return loss, accuracy
 
-    def gradient_descent(self, iterations=100, printiter=1):
+    def gradient_descent(self, iterations=300, printiter=1):
         assert self.mlp
         assert self.X is not None
         assert self.y is not None
@@ -58,8 +59,8 @@ class Classifier(Model):
             for p in self.mlp.parameters():
                 p.data -= alpha * p.grad
 
-            if k % printiter == 0:
-                print(loss, acc)
+            if k % printiter == 0 or k == iterations-1:
+                print(f"loss {loss.data:.4f},  accuracy {acc}")
 
     def plot_decision_boundary(self):
         h = 0.25
@@ -80,3 +81,17 @@ class Classifier(Model):
         plt.xlim(xx.min(), xx.max())
         plt.ylim(yy.min(), yy.max())
         plt.show()
+
+
+if __name__ == "__main__":
+    r = Classifier()
+    r.create_dataset()
+    r.gradient_descent()
+
+    x = [Value(xi, label=f"x{i}") for i, xi in enumerate(r.X[0])]
+    out = r.mlp(x)        # forward pass for one sample
+    r.mlp.zero_grad()     # clear grads left over from training
+    out.backward()
+    draw_dot(out).render("classifier_graph", view=True)
+
+    r.plot_decision_boundary()

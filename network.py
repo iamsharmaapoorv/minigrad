@@ -12,14 +12,21 @@ class Module:
 
 
 class Neuron(Module):
-    def __init__(self, no_w=3, nonlin=True):
-        self.w = [Value(random.uniform(-1, 1)) for _ in range(no_w)]
-        self.b = Value(0)
+    def __init__(self, no_w=3, nonlin=True, name=""):
+        self.w = [Value(random.uniform(-1, 1), label=f"{name}.w{i}")
+                  for i in range(no_w)]
+        self.b = Value(0, label=f"{name}.b")
         self.nonlin = nonlin
+        self.name = name
 
     def __call__(self, x):
         activation = sum((wi*xi for wi, xi in zip(self.w, x)), self.b)
-        return activation.relu() if self.nonlin else activation
+        activation.label = f"{self.name}.z"
+        if not self.nonlin:
+            return activation
+        output = activation.relu()
+        output.label = self.name
+        return output
 
     def parameters(self):
         return self.w + [self.b]
@@ -29,14 +36,13 @@ class Neuron(Module):
 
 
 class Layer(Module):
-    def __init__(self, no_input, no_neuron, nonlin=True) -> None:
-        self.neurons = [Neuron(no_input, nonlin) for _ in range(no_neuron)]
+    def __init__(self, no_input, no_neuron, nonlin=True, name="") -> None:
+        self.neurons = [Neuron(no_input, nonlin, f"{name}N{i}")
+                        for i in range(no_neuron)]
         self.nonlin = nonlin
 
     def __call__(self, x):
         activations = [neuron(x) for neuron in self.neurons]
-        activations = [
-            activation.relu() if self.nonlin else activation for activation in activations]
         return activations[0] if len(activations) == 1 else activations
 
     def parameters(self):
@@ -56,7 +62,7 @@ class Layer(Module):
 class MLP(Module):
     def __init__(self, nin, nouts) -> None:
         inputs = [nin]+nouts
-        self.layers = [Layer(inputs[i], inputs[i+1], i != len(nouts)-1)
+        self.layers = [Layer(inputs[i], inputs[i+1], i != len(nouts)-1, f"L{i}")
                        for i in range(len(inputs)-1)]
 
     def __call__(self, x):

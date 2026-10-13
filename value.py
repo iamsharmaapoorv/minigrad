@@ -2,12 +2,13 @@ from collections import deque
 
 
 class Value:
-    def __init__(self, data, prev=set(), op="") -> None:
+    def __init__(self, data, prev=(), op="", label="") -> None:
         self.data = data
         self.grad = 0
         self._backward = lambda: None
         self.op = op
         self.prev = prev
+        self.label = label
 
     # dy/dx = (f(x+h) - f(x))/h
 
@@ -56,7 +57,7 @@ class Value:
     def __truediv__(self, other):
         return self*(other**-1)
 
-    def backward(self):
+    def topo_sort(self):
         visited = set()
         order = []
 
@@ -68,8 +69,11 @@ class Value:
                 order.append(node)
 
         dfs(self)
+        return order
+
+    def backward(self):
         self.grad = 1
-        for elem in reversed(order):
+        for elem in reversed(self.topo_sort()):
             elem._backward()
 
     def __neg__(self):  # -self
